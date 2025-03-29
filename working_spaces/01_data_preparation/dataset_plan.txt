@@ -1,0 +1,31 @@
+batter_encoder (with features)
+- name
+- batting hand
+- country?
+- age?
+
+bowler_encoder
+- name
+- hand
+- style
+- country?
+- age?
+
+rest_of_model
+- batter_encoding
+- bowler_encoding
+- nonstriker_encoding
+- current_runs_match
+- runs_remaining_match
+- wickets_remaining_match
+- deliveries_remaining_match
+- over_delivery_number
+- batter_score
+- batter_balls_faced
+- nonstriker_score
+- nonstriker_balls_faced
+
+outcome
+- wickets
+- runs
+- extras?
