@@ -1,0 +1,64 @@
+{
+    "data": {
+        "international_path": "data/step_03/matches_international.csv",
+        "domestic_path": "data/step_03/matches_domestic.csv",
+        "deliveries_path": "data/step_03/matches/",
+        "start_date": "20000101",
+        "end_date": "20091231",
+        "match_data_columns": [
+            "ground",
+            "match_date",
+            "team1",
+            "team2",
+            "toss_winner"
+        ],
+        "delivery_data_columns": [
+            "match_id",
+            "balls_remaining",
+            "current_runs",
+            "runs_remaining",
+            "wickets_remaining",
+            "batter_on_strike_name",
+            "batter_on_strike_runs",
+            "batter_on_strike_balls",
+            "batter_off_strike_runs",
+            "batter_off_strike_name",
+            "batter_off_strike_balls",
+            "bowler_on_strike_balls",
+            "bowler_on_strike_wickets",
+            "bowler_on_strike_runs",
+            "runs",
+            "wickets"
+        ],
+        "previous_delivery_columns": [
+            "balls_remainint",
+            "current_runs",
+            "runs_remaining",
+            "wickets_remaining"
+        ],
+        "current_delivery_columns": [
+            "ground",
+            "match_date",
+            "team1",
+            "team2",
+            "toss_winner",
+            "batter_on_strike_name",
+            "batter_off_strike_name",
+            "bowler_on_strike_name"
+        ],
+        "fetch_columns": [
+            "batter_on_strike_runs",
+            "batter_on_strike_balls",
+            "batter_off_strike_runs",
+            "batter_off_strike_balls",
+            "bowler_on_strike_balls",
+            "bowler_on_strike_wickets",
+            "bowler_on_strike_runs"
+        ],
+        "outcome_columns": [
+            "runs",
+            "wickets"
+        ]
+    },
+    "sequence_length": 24
+}
