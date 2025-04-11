@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
-
+from datetime import datetime
 
 class CricketDataset(Dataset):
     def __init__(self, config_path, seed=0):
@@ -31,19 +31,28 @@ class CricketDataset(Dataset):
 
     def load_data(self):
 
+        # read match files
         international_matches = pd.read_csv(
             self.config["data"]["international_path"])
         domestic_matches = pd.read_csv(self.config["data"]["domestic_path"])
 
+        # convert dates to datetime format
+        international_matches['match_date'] = pd.to_datetime(international_matches['match_date'])
+        domestic_matches['match_date'] = pd.to_datetime(domestic_matches['match_date'])
+
+        start_date = datetime.strptime(self.config['data']['start_date'], '%Y/%m/%d')
+        end_date = datetime.strptime(self.config['data']['end_date'], '%Y/%m/%d')
+
+        # combine match files and enforce date restrictions
         all_matches = pd.concat(
             [international_matches, domestic_matches]).reset_index(drop=True)
-        all_matches = all_matches[(all_matches['date'] >= self.config['data']['start_date']) & (
-            all_matches['date'] <= self.config['data']['end_date'])]
+        all_matches = all_matches[(all_matches['match_date'] >= start_date) & (
+            all_matches['match_date'] <= end_date)]
 
-        # add these to config
         match_data_columns = self.config['data']['match_data_columns']
         delivery_data_columns = self.config['data']['delivery_data_columns']
 
+        # create ball by ball dataset
         overall_dataset = pd.DataFrame(
             columns=match_data_columns + delivery_data_columns)
 
@@ -107,3 +116,14 @@ class CricketDataset(Dataset):
                 new_row['bowler_on_strike_wickets'] = row['bowler_on_strike_wickets']
             else:
                 pass
+
+    def __getitem__(self, idx):
+        sequence_indices = self.sequences[idx]
+
+        
+
+
+if __name__ == "__main__":
+    config_path = "../models/config_draft.json"
+
+    CricketDataset(config_path)
