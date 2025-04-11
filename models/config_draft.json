@@ -31,12 +31,13 @@
             "wickets"
         ],
         "previous_delivery_columns": [
-            "balls_remainint",
+            "balls_remaining",
             "current_runs",
             "runs_remaining",
             "wickets_remaining"
         ],
         "current_delivery_columns": [
+            "match_id",
             "ground",
             "match_date",
             "team1",

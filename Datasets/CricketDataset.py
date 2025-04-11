@@ -30,6 +30,30 @@ class CricketDataset(Dataset):
         return config
 
     def load_data(self):
+        """
+        Loads and processes cricket match data from multiple CSV files.
+        This function reads international and domestic cricket match data from 
+        specified file paths, filters the data based on a date range, and combines 
+        it with delivery-level data to create a comprehensive dataset.
+        Returns:
+            pd.DataFrame: A DataFrame containing combined match and delivery data 
+            with specified columns.
+        Raises:
+            FileNotFoundError: If any of the specified CSV files are not found.
+            KeyError: If required keys are missing in the configuration dictionary.
+        Notes:
+            - The function expects the configuration dictionary (`self.config`) to 
+              contain the following keys:
+                - `data.international_path`: Path to the international matches CSV file.
+                - `data.domestic_path`: Path to the domestic matches CSV file.
+                - `data.deliveries_path`: Directory path containing delivery data CSV files.
+                - `data.start_date`: Start date for filtering matches (inclusive).
+                - `data.end_date`: End date for filtering matches (inclusive).
+                - `data.match_data_columns`: List of columns to extract from match data.
+                - `data.delivery_data_columns`: List of columns to extract from delivery data.
+            - Delivery data files are expected to be named using the match ID 
+              (e.g., `<match_id>.csv`) and stored in the specified deliveries path.
+        """
 
         international_matches = pd.read_csv(
             self.config["data"]["international_path"])
@@ -40,7 +64,6 @@ class CricketDataset(Dataset):
         all_matches = all_matches[(all_matches['date'] >= self.config['data']['start_date']) & (
             all_matches['date'] <= self.config['data']['end_date'])]
 
-        # add these to config
         match_data_columns = self.config['data']['match_data_columns']
         delivery_data_columns = self.config['data']['delivery_data_columns']
 
@@ -60,11 +83,53 @@ class CricketDataset(Dataset):
 
             overall_dataset = pd.concat([overall_dataset, delivery_data])
 
-        overall_dataset = overall_dataset.reset_index(drop=True)
+        overall_dataset = overall_dataset.sort_values(by=["match_id", "balls_remaining", "current_runs"], how=[
+                                                      "ascending", "descending", "ascending"]).reset_index(drop=True)
 
         return overall_dataset
 
     def create_features_labels(self):
+        """
+        Generates a new DataFrame with features and labels for machine learning 
+        by processing the existing cricket dataset.
+        This function iterates through the dataset row by row and creates a new 
+        DataFrame where each row represents a delivery with features from the 
+        previous delivery, current delivery, and the outcome of the next delivery.
+        The function also calculates and updates statistics for batters and bowlers 
+        based on their performance in the dataset up to the current delivery.
+        Returns:
+            pd.DataFrame: A new DataFrame containing the processed features and labels.
+        Helper Functions:
+            fetch_bowler_stats(bowler_name, row_index):
+                Fetches the most recent statistics (runs, balls, and wickets) 
+                for a given bowler up to the specified row index.
+        Notes:
+            - The function assumes that the dataset (`self.data`) is sorted in 
+              chronological order of deliveries.
+            - The configuration for column names is provided in `self.config`.
+        Raises:
+            KeyError: If the required columns specified in `self.config` are 
+                      not present in the dataset.
+            IndexError: If the function attempts to access a row beyond the 
+                        bounds of the dataset.
+        Example:
+            Assuming `self.data` is a DataFrame containing cricket match data 
+            and `self.config` is a dictionary with the required column mappings:
+            >>> features, labels = create_features_labels()
+        """
+
+        def fetch_bowler_stats(bowler_name, row_index):
+            recent_dat = self.data.iloc[:row_index]
+
+            bowler_data = recent_dat[recent_dat['bowler_on_strike_name']
+                                     == bowler_name]
+
+            if len(bowler_data) == 0:
+                return 0, 0, 0
+            else:
+                most_recent_row = bowler_data.iloc[-1]
+                return most_recent_row['bowler_on_strike_runs'], most_recent_row['bowler_on_strike_balls'], most_recent_row['bowler_on_strike_wickets']
+
         df = pd.DataFrame(columns=self.data.columns)
 
         for index, row in self.data.iterrows():
@@ -106,4 +171,15 @@ class CricketDataset(Dataset):
                 new_row['bowler_on_strike_balls'] = row['bowler_on_strike_balls']
                 new_row['bowler_on_strike_wickets'] = row['bowler_on_strike_wickets']
             else:
-                pass
+                new_row['bowler_on_strike_runs'], new_row['bowler_on_strike_balls'], new_row['bowler_on_strike_wickets'] = fetch_bowler_stats(
+                    next_delivery_bowler, index)
+
+            for column_name in self.config['outcome_columns']:
+                new_row[column_name] = self.data.iloc[index + 1][column_name]
+
+            df = df.append(new_row, ignore_index=True)
+
+        features = df.drop(columns=self.config['outcome_columns'])
+        labels = df[self.config['outcome_columns']]
+
+        return features, labels
