@@ -1,10 +1,10 @@
 {
     "data": {
-        "international_path": "data/step_03/matches_international.csv",
-        "domestic_path": "data/step_03/matches_domestic.csv",
-        "deliveries_path": "data/step_03/matches/",
-        "start_date": "20000101",
-        "end_date": "20091231",
+        "international_path": "../data/step_03/matches_international.csv",
+        "domestic_path": "../data/step_03/matches_domestic.csv",
+        "deliveries_path": "../data/step_03/matches/",
+        "start_date": "2000/01/01",
+        "end_date": "2002/12/31",
         "match_data_columns": [
             "ground",
             "match_date",
